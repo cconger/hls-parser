@@ -44,6 +44,34 @@ class LineArray extends Array {
   }
 }
 
+class FilteredWriter {
+  constructor(writer) {
+    this.writer = writer;
+  }
+
+  // @override
+  push(...elems) {
+    // redundancy check
+    for (const elem of elems) {
+      if (!elem.startsWith('#')) {
+        this.writer.write(elem);
+        continue;
+      }
+      if (ALLOW_REDUNDANCY.some(item => elem.startsWith(item))) {
+        this.writer.write(elem);
+        continue;
+      }
+      if (this.includes(elem)) {
+        if (SKIP_IF_REDUNDANT.some(item => elem.startsWith(item))) {
+          continue;
+        }
+        utils.INVALIDPLAYLIST(`Redundant item (${elem})`);
+      }
+      this.writer.write(elem);
+    }
+  }
+}
+
 function buildDecimalFloatingNumber(num, fixed) {
   let roundFactor = 1000;
   if (fixed) {
@@ -456,4 +484,27 @@ function stringify(playlist) {
   return lines.join('\n');
 }
 
-module.exports = stringify;
+function stream(writeable, playlist) {
+  utils.PARAMCHECK(playlist);
+  utils.ASSERT('Not a playlist', playlist.type === 'playlist');
+  const lines = new FilteredWriter(writeable);
+  lines.push('#EXTM3U');
+
+  if (playlist.version) {
+    lines.push(`#EXT-X-VERSION:${playlist.version}`);
+  }
+  if (playlist.independentSegments) {
+    lines.push('#EXT-X-INDEPENDENT-SEGMENTS');
+  }
+  if (playlist.start) {
+    lines.push(`#EXT-X-START:TIME-OFFSET=${buildDecimalFloatingNumber(playlist.start.offset)}${playlist.start.precise ? ',PRECISE=YES' : ''}`);
+  }
+  if (playlist.isMasterPlaylist) {
+    buildMasterPlaylist(lines, playlist);
+  } else {
+    buildMediaPlaylist(lines, playlist);
+  }
+  return
+}
+
+module.exports = {stringify, stream};

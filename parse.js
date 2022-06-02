@@ -949,7 +949,7 @@ function lexicalParse(text, params) {
     // V8 has garbage collection issues when cleaning up substrings split from strings greater
     // than 13 characters so before we continue we need to safely copy over each line so that it
     // doesn't hold any reference to the containing string.
-    const line = Buffer.from(l.trim()).toString();
+    const line = l.trim();
     if (!line) {
       // empty line
       continue;

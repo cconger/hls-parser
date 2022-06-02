@@ -1,7 +1,7 @@
 /*! Copyright Kuu Miyazaki. SPDX-License-Identifier: MIT */
 const {getOptions, setOptions} = require('./utils');
 const parse = require('./parse');
-const stringify = require('./stringify');
+const {stringify, stream} = require('./stringify');
 const types = require('./types');
 
 module.exports = {
@@ -9,5 +9,6 @@ module.exports = {
   stringify,
   types,
   getOptions,
-  setOptions
+  setOptions,
+  stream
 };
